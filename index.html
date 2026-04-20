@@ -383,6 +383,78 @@
       background: var(--bg-section);
       margin: 20px 0;
     }
+
+    /* 完了画面 */
+    #complete-view { display: none; }
+
+    .complete-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #e9f7ef;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+
+    .complete-icon svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .complete-title {
+      font-family: var(--font-display);
+      font-size: 21px;
+      font-weight: 600;
+      color: var(--text-primary);
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    .complete-sub {
+      font-size: 15px;
+      color: var(--text-secondary);
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .complete-summary {
+      background: var(--bg-section);
+      border-radius: 12px;
+      padding: 4px 16px;
+      margin-bottom: 28px;
+    }
+
+    .complete-summary table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .complete-summary tr {
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .complete-summary tr:last-child {
+      border-bottom: none;
+    }
+
+    .complete-summary th {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      padding: 10px 0;
+      text-align: left;
+      width: 80px;
+      vertical-align: top;
+    }
+
+    .complete-summary td {
+      font-size: 15px;
+      color: var(--text-primary);
+      padding: 10px 0;
+      font-weight: 500;
+    }
   </style>
 </head>
 <body>
@@ -487,13 +559,39 @@
       <button class="btn-secondary" id="btn-back">戻る</button>
     </div>
   </div>
+
+  <!-- 完了画面 -->
+  <div id="complete-view">
+    <div class="card">
+      <div class="complete-icon">
+        <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="5,15 11,21 23,8" stroke="#1a7f4e" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <p class="complete-title">送信完了</p>
+      <p class="complete-sub">経費データと写真を保存しました</p>
+
+      <div class="complete-summary">
+        <table>
+          <tr><th>名前</th><td id="done-name"></td></tr>
+          <tr><th>日付</th><td id="done-date"></td></tr>
+          <tr><th>内容</th><td id="done-content"></td></tr>
+          <tr><th>税込金額</th><td id="done-amount"></td></tr>
+          <tr><th>税率</th><td id="done-taxrate"></td></tr>
+          <tr id="done-photos-row"><th>写真</th><td id="done-photos"></td></tr>
+        </table>
+      </div>
+
+      <button class="btn-primary" id="btn-new">続けて入力する</button>
+    </div>
+  </div>
 </main>
 
 <div id="toast"></div>
 
 <script>
   // ===== 設定 =====
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbzBczEV3kPBG1RCLgOaVp1orLURQCk1m6BjFuIHXUmE06TlYZ8dZoHcW7xAnbZiN5Hl/exec'; // デプロイ後に置き換える
+  const GAS_URL = 'https://script.google.com/macros/s/AKfycbzBczEV3kPBG1RCLgOaVp1orLURQCk1m6BjFuIHXUmE06TlYZ8dZoHcW7xAnbZiN5Hl/exec';
 
   // ===== 状態 =====
   let photos = []; // { file, dataUrl, compressed }
@@ -657,8 +755,23 @@
         });
       }
 
-      showToast('送信しました ✓');
-      setTimeout(() => resetForm(), 1800);
+      // 完了画面に表示する内容をセット
+      document.getElementById('done-name').textContent = name;
+      document.getElementById('done-date').textContent = date;
+      document.getElementById('done-content').textContent = content;
+      document.getElementById('done-amount').textContent = Number(amount).toLocaleString() + ' 円';
+      document.getElementById('done-taxrate').textContent = taxRate;
+      const donePhotosRow = document.getElementById('done-photos-row');
+      if (photos.length > 0) {
+        document.getElementById('done-photos').textContent = photos.length + '枚';
+        donePhotosRow.style.display = '';
+      } else {
+        donePhotosRow.style.display = 'none';
+      }
+
+      // 完了画面へ切り替え
+      document.getElementById('confirm-view').style.display = 'none';
+      document.getElementById('complete-view').style.display = 'block';
 
     } catch (err) {
       showToast('エラー: ' + err.message);
@@ -681,6 +794,11 @@
       });
   }
 
+  // ===== 続けて入力するボタン =====
+  document.getElementById('btn-new').addEventListener('click', () => {
+    resetForm();
+  });
+
   // ===== フォームリセット =====
   function resetForm() {
     document.getElementById('content').value = '';
@@ -689,6 +807,7 @@
     photos = [];
     renderPreviews();
     document.getElementById('confirm-view').style.display = 'none';
+    document.getElementById('complete-view').style.display = 'none';
     document.getElementById('input-view').style.display = 'block';
 
     const btn = document.getElementById('btn-submit');
