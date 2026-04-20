@@ -749,7 +749,6 @@
         await postGAS({
           action: 'savePhoto',
           name, date,
-          index: i + 1,
           base64: photos[i].compressed,
           mimeType: 'image/jpeg'
         });
