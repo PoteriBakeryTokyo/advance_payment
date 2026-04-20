@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>立替経費入力</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --text-primary: #1d1d1f;
+      --text-secondary: #6e6e73;
+      --bg: #fff;
+      --bg-section: #f5f5f7;
+      --blue: #0071e3;
+      --border: rgba(0,0,0,0.12);
+      --radius-card: 18px;
+      --radius-btn: 980px;
+      --font-text: "SF Pro JP","SF Pro Text","SF Pro Icons","Hiragino Kaku Gothic Pro","ヒラギノ角ゴ Pro W3",メイリオ,Meiryo,"ＭＳ Ｐゴシック","Helvetica Neue",Helvetica,Arial,sans-serif;
+      --font-display: "SF Pro JP","SF Pro Display","SF Pro Icons","Hiragino Kaku Gothic Pro","ヒラギノ角ゴ Pro W3",メイリオ,Meiryo,"ＭＳ Ｐゴシック","Helvetica Neue",Helvetica,Arial,sans-serif;
+    }
+
+    body {
+      font-family: var(--font-text);
+      font-size: 17px;
+      line-height: 1.47;
+      letter-spacing: -0.357px;
+      color: var(--text-primary);
+      background: var(--bg-section);
+      min-height: 100vh;
+    }
+
+    /* ヘッダ */
+    header {
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header h1 {
+      font-family: var(--font-display);
+      font-size: 19px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: normal;
+    }
+
+    /* メインコンテナ */
+    main {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 24px 16px 48px;
+    }
+
+    /* カード */
+    .card {
+      background: var(--bg);
+      border-radius: var(--radius-card);
+      padding: 28px 24px;
+      box-shadow: rgba(0,0,0,0.08) 0px 2px 16px 0px;
+    }
+
+    /* フォームグループ */
+    .field {
+      margin-bottom: 20px;
+    }
+
+    .field:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 0.2px;
+      margin-bottom: 7px;
+      text-transform: uppercase;
+    }
+
+    /* インプット共通 */
+    input[type="text"],
+    input[type="date"],
+    input[type="number"],
+    select {
+      width: 100%;
+      height: 48px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 0 14px;
+      font-family: var(--font-text);
+      font-size: 17px;
+      color: var(--text-primary);
+      background: var(--bg);
+      appearance: none;
+      -webkit-appearance: none;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(0,113,227,0.15);
+    }
+
+    /* セレクト矢印 */
+    .select-wrap {
+      position: relative;
+    }
+
+    .select-wrap::after {
+      content: '';
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 10px;
+      height: 6px;
+      background: var(--text-secondary);
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+      pointer-events: none;
+    }
+
+    select {
+      padding-right: 36px;
+      cursor: pointer;
+    }
+
+    /* 税率 ラジオボタン風 */
+    .tax-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .tax-group input[type="radio"] {
+      display: none;
+    }
+
+    .tax-group label {
+      flex: 1;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 400;
+      color: var(--text-primary);
+      cursor: pointer;
+      margin-bottom: 0;
+      text-transform: none;
+      letter-spacing: normal;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+      user-select: none;
+    }
+
+    .tax-group input[type="radio"]:checked + label {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* 写真アップロード */
+    .photo-upload-area {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .photo-upload-area:hover {
+      border-color: var(--blue);
+      background: rgba(0,113,227,0.03);
+    }
+
+    .photo-upload-area input[type="file"] {
+      display: none;
+    }
+
+    .upload-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .upload-text {
+      font-size: 15px;
+      color: var(--blue);
+      font-weight: 500;
+    }
+
+    .upload-sub {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* プレビューグリッド */
+    .photo-previews {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .preview-item {
+      position: relative;
+      width: 80px;
+      height: 80px;
+    }
+
+    .preview-item img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 10px;
+      display: block;
+    }
+
+    .preview-remove {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 22px;
+      height: 22px;
+      background: var(--text-primary);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      font-size: 13px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ボタン */
+    .btn-primary {
+      width: 100%;
+      height: 52px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-btn);
+      font-family: var(--font-text);
+      font-size: 17px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 28px;
+      transition: background 0.15s, opacity 0.15s;
+      letter-spacing: -0.2px;
+    }
+
+    .btn-primary:hover { background: #0077ed; }
+    .btn-primary:active { opacity: 0.8; }
+    .btn-primary:disabled {
+      background: #adadb0;
+      cursor: not-allowed;
+      opacity: 1;
+    }
+
+    .btn-secondary {
+      width: 100%;
+      height: 52px;
+      background: transparent;
+      color: var(--blue);
+      border: 1.5px solid var(--blue);
+      border-radius: var(--radius-btn);
+      font-family: var(--font-text);
+      font-size: 17px;
+      font-weight: 400;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: background 0.15s;
+      letter-spacing: -0.2px;
+    }
+
+    .btn-secondary:hover { background: rgba(0,113,227,0.05); }
+
+    /* 確認画面 */
+    #confirm-view { display: none; }
+
+    .confirm-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .confirm-table tr {
+      border-bottom: 1px solid var(--bg-section);
+    }
+
+    .confirm-table tr:last-child {
+      border-bottom: none;
+    }
+
+    .confirm-table th {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
+      padding: 12px 0 12px 0;
+      text-align: left;
+      width: 90px;
+      vertical-align: top;
+    }
+
+    .confirm-table td {
+      font-size: 17px;
+      color: var(--text-primary);
+      padding: 12px 0;
+      vertical-align: top;
+    }
+
+    .confirm-photos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .confirm-photos img {
+      width: 72px;
+      height: 72px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    /* トースト */
+    #toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1d1d1f;
+      color: #f5f5f7;
+      padding: 13px 22px;
+      border-radius: 980px;
+      font-size: 15px;
+      white-space: nowrap;
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      z-index: 200;
+      pointer-events: none;
+    }
+
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* ローディング */
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .divider {
+      height: 1px;
+      background: var(--bg-section);
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>立替経費入力</h1>
+</header>
+
+<main>
+  <!-- 入力フォーム -->
+  <div id="input-view">
+    <div class="card">
+
+      <!-- 名前 -->
+      <div class="field">
+        <label for="name">名前</label>
+        <div class="select-wrap">
+          <select id="name">
+            <option value="山崎">山崎</option>
+            <option value="淵脇">淵脇</option>
+            <option value="唐">唐</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 日付 -->
+      <div class="field">
+        <label for="date">日付</label>
+        <input type="date" id="date">
+      </div>
+
+      <!-- 内容 -->
+      <div class="field">
+        <label for="content">内容</label>
+        <input type="text" id="content" placeholder="例: 昼食代">
+      </div>
+
+      <!-- 税込金額 -->
+      <div class="field">
+        <label for="amount">税込金額（円）</label>
+        <input type="number" id="amount" placeholder="0" min="0" inputmode="numeric">
+      </div>
+
+      <!-- 税率 -->
+      <div class="field">
+        <label>税率</label>
+        <div class="tax-group">
+          <input type="radio" id="tax8" name="taxRate" value="8%">
+          <label for="tax8">8%</label>
+          <input type="radio" id="tax10" name="taxRate" value="10%" checked>
+          <label for="tax10">10%</label>
+        </div>
+      </div>
+
+      <!-- 写真 -->
+      <div class="field">
+        <label>写真</label>
+        <div class="photo-upload-area" id="upload-area">
+          <input type="file" id="photo-input" accept="image/*" capture="environment" multiple>
+          <span class="upload-icon">📷</span>
+          <div class="upload-text">写真を追加</div>
+          <div class="upload-sub">撮影または端末から選択（複数可）</div>
+        </div>
+        <div class="photo-previews" id="photo-previews"></div>
+      </div>
+
+      <button class="btn-primary" id="btn-confirm">確認</button>
+    </div>
+  </div>
+
+  <!-- 確認画面 -->
+  <div id="confirm-view">
+    <div class="card">
+      <table class="confirm-table">
+        <tr>
+          <th>名前</th>
+          <td id="c-name"></td>
+        </tr>
+        <tr>
+          <th>日付</th>
+          <td id="c-date"></td>
+        </tr>
+        <tr>
+          <th>内容</th>
+          <td id="c-content"></td>
+        </tr>
+        <tr>
+          <th>税込金額</th>
+          <td id="c-amount"></td>
+        </tr>
+        <tr>
+          <th>税率</th>
+          <td id="c-taxrate"></td>
+        </tr>
+        <tr id="c-photos-row">
+          <th>写真</th>
+          <td><div class="confirm-photos" id="c-photos"></div></td>
+        </tr>
+      </table>
+
+      <button class="btn-primary" id="btn-submit">送信</button>
+      <button class="btn-secondary" id="btn-back">戻る</button>
+    </div>
+  </div>
+</main>
+
+<div id="toast"></div>
+
+<script>
+  // ===== 設定 =====
+  const GAS_URL = 'YOUR_GAS_URL_HERE'; // デプロイ後に置き換える
+
+  // ===== 状態 =====
+  let photos = []; // { file, dataUrl, compressed }
+
+  // ===== 初期化 =====
+  (function init() {
+    // 今日の日付をデフォルトにセット
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    document.getElementById('date').value = `${yyyy}-${mm}-${dd}`;
+  })();
+
+  // ===== 写真選択 =====
+  document.getElementById('upload-area').addEventListener('click', () => {
+    document.getElementById('photo-input').click();
+  });
+
+  document.getElementById('photo-input').addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files);
+    for (const file of files) {
+      const compressed = await compressImage(file, 1200, 0.7);
+      const dataUrl = await fileToDataUrl(file);
+      photos.push({ file, dataUrl, compressed });
+    }
+    renderPreviews();
+    e.target.value = ''; // 同じファイルを再選択できるようリセット
+  });
+
+  function renderPreviews() {
+    const container = document.getElementById('photo-previews');
+    container.innerHTML = '';
+    photos.forEach((p, i) => {
+      const item = document.createElement('div');
+      item.className = 'preview-item';
+      item.innerHTML = `
+        <img src="${p.dataUrl}" alt="写真${i+1}">
+        <button class="preview-remove" data-index="${i}">×</button>
+      `;
+      container.appendChild(item);
+    });
+    container.querySelectorAll('.preview-remove').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        photos.splice(Number(btn.dataset.index), 1);
+        renderPreviews();
+      });
+    });
+  }
+
+  // ===== 画像圧縮 =====
+  function compressImage(file, maxSide, quality) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        let { width, height } = img;
+        if (width > maxSide || height > maxSide) {
+          if (width > height) {
+            height = Math.round(height * maxSide / width);
+            width = maxSide;
+          } else {
+            width = Math.round(width * maxSide / height);
+            height = maxSide;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        // base64のdata:image/jpeg;base64, 部分を除去
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(dataUrl.split(',')[1]);
+      };
+      img.src = url;
+    });
+  }
+
+  function fileToDataUrl(file) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ===== 確認ボタン =====
+  document.getElementById('btn-confirm').addEventListener('click', () => {
+    const name = document.getElementById('name').value;
+    const dateRaw = document.getElementById('date').value; // "2026-04-20"
+    const content = document.getElementById('content').value.trim();
+    const amount = document.getElementById('amount').value;
+    const taxRate = document.querySelector('input[name="taxRate"]:checked').value;
+
+    if (!content) { showToast('内容を入力してください'); return; }
+    if (!amount || Number(amount) <= 0) { showToast('金額を入力してください'); return; }
+
+    // 日付を YYYY/MM/DD 形式に変換
+    const date = dateRaw.replace(/-/g, '/');
+
+    // 確認画面に反映
+    document.getElementById('c-name').textContent = name;
+    document.getElementById('c-date').textContent = date;
+    document.getElementById('c-content').textContent = content;
+    document.getElementById('c-amount').textContent = Number(amount).toLocaleString() + ' 円';
+    document.getElementById('c-taxrate').textContent = taxRate;
+
+    const cPhotos = document.getElementById('c-photos');
+    const cPhotosRow = document.getElementById('c-photos-row');
+    cPhotos.innerHTML = '';
+    if (photos.length > 0) {
+      cPhotosRow.style.display = '';
+      photos.forEach((p) => {
+        const img = document.createElement('img');
+        img.src = p.dataUrl;
+        cPhotos.appendChild(img);
+      });
+    } else {
+      cPhotosRow.style.display = 'none';
+    }
+
+    document.getElementById('input-view').style.display = 'none';
+    document.getElementById('confirm-view').style.display = 'block';
+  });
+
+  // ===== 戻るボタン =====
+  document.getElementById('btn-back').addEventListener('click', () => {
+    document.getElementById('confirm-view').style.display = 'none';
+    document.getElementById('input-view').style.display = 'block';
+  });
+
+  // ===== 送信ボタン =====
+  document.getElementById('btn-submit').addEventListener('click', async () => {
+    const btn = document.getElementById('btn-submit');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>送信中...';
+
+    const name = document.getElementById('name').value;
+    const date = document.getElementById('date').value.replace(/-/g, '/');
+    const content = document.getElementById('content').value.trim();
+    const amount = document.getElementById('amount').value;
+    const taxRate = document.querySelector('input[name="taxRate"]:checked').value;
+
+    try {
+      // 1. 経費データをスプシに送信
+      await postGAS({
+        action: 'submitExpense',
+        name, date, content, amount, taxRate
+      });
+
+      // 2. 写真を順番に送信
+      for (let i = 0; i < photos.length; i++) {
+        await postGAS({
+          action: 'savePhoto',
+          name, date,
+          index: i + 1,
+          base64: photos[i].compressed,
+          mimeType: 'image/jpeg'
+        });
+      }
+
+      showToast('送信しました ✓');
+      setTimeout(() => resetForm(), 1800);
+
+    } catch (err) {
+      showToast('エラー: ' + err.message);
+      btn.disabled = false;
+      btn.textContent = '送信';
+    }
+  });
+
+  // ===== GAS POST =====
+  function postGAS(payload) {
+    return fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'payload=' + encodeURIComponent(JSON.stringify(payload)),
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.status !== 'ok') throw new Error(data.message || '不明なエラー');
+        return data;
+      });
+  }
+
+  // ===== フォームリセット =====
+  function resetForm() {
+    document.getElementById('content').value = '';
+    document.getElementById('amount').value = '';
+    document.getElementById('tax10').checked = true;
+    photos = [];
+    renderPreviews();
+    document.getElementById('confirm-view').style.display = 'none';
+    document.getElementById('input-view').style.display = 'block';
+
+    const btn = document.getElementById('btn-submit');
+    btn.disabled = false;
+    btn.textContent = '送信';
+  }
+
+  // ===== トースト =====
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+</script>
+</body>
+</html>
